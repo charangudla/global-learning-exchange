@@ -19,8 +19,10 @@ docs/  Product, architecture, setup, and engineering documents
 ## Local Development
 
 ```powershell
+docker compose up -d postgres
 cd app
 npm install
+npm run db:migrate
 npm run dev
 ```
 
@@ -34,6 +36,8 @@ http://localhost:3000
 
 - `docs/mvp-prd.md`
 - `docs/tech-stack.md`
+- `docs/open-source-first.md`
+- `docs/local-open-source-dev.md`
 - `docs/development-plan.md`
 - `docs/engineering-principles.md`
 - `docs/database-schema.md`

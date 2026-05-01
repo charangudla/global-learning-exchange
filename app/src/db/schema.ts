@@ -71,6 +71,13 @@ export const verificationRiskLevelEnum = pgEnum("verification_risk_level", [
   "unknown"
 ]);
 
+export const authProviderEnum = pgEnum("auth_provider", [
+  "local",
+  "supabase",
+  "authjs",
+  "keycloak"
+]);
+
 export const credentialTypeEnum = pgEnum("credential_type", [
   "linkedin",
   "google_scholar",
@@ -286,6 +293,43 @@ export const userRoles = pgTable(
   (table) => [
     primaryKey({ columns: [table.userId, table.role] }),
     index("user_roles_role_idx").on(table.role)
+  ]
+);
+
+export const localAuthIdentities = pgTable(
+  "local_auth_identities",
+  {
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .primaryKey(),
+    provider: authProviderEnum("provider").default("local").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    passwordUpdatedAt: timestamp("password_updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    ...timestamps
+  },
+  (table) => [index("local_auth_identities_provider_idx").on(table.provider)]
+);
+
+export const localAuthSessions = pgTable(
+  "local_auth_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    userAgent: text("user_agent"),
+    ipAddress: text("ip_address"),
+    ...timestamps
+  },
+  (table) => [
+    uniqueIndex("local_auth_sessions_token_hash_unique").on(table.tokenHash),
+    index("local_auth_sessions_user_idx").on(table.userId),
+    index("local_auth_sessions_expires_idx").on(table.expiresAt)
   ]
 );
 
@@ -868,6 +912,10 @@ export const aiMessages = pgTable(
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type LocalAuthIdentity = typeof localAuthIdentities.$inferSelect;
+export type NewLocalAuthIdentity = typeof localAuthIdentities.$inferInsert;
+export type LocalAuthSession = typeof localAuthSessions.$inferSelect;
+export type NewLocalAuthSession = typeof localAuthSessions.$inferInsert;
 export type StudentProfile = typeof studentProfiles.$inferSelect;
 export type NewStudentProfile = typeof studentProfiles.$inferInsert;
 export type SpeakerProfile = typeof speakerProfiles.$inferSelect;

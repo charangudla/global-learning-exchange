@@ -34,6 +34,7 @@ AUTH_PROVIDER=local
 EMAIL_VERIFICATION_PROVIDER=dev
 PHONE_VERIFICATION_PROVIDER=dev
 DEV_VERIFICATION_CODE=000000
+DATABASE_URL=postgres://gle:gle_dev_password@localhost:5432/global_learning_exchange
 ```
 
 Managed providers can be added later without changing the product workflows.
