@@ -8,6 +8,7 @@ import {
   Star
 } from "lucide-react";
 import Link from "next/link";
+import { asRoute } from "@/lib/routes";
 
 const marketplaceStats = [
   { label: "AI tutor", value: "Immediate" },
@@ -85,12 +86,18 @@ export default function Home() {
             through reviews, notes, and moderation-ready records.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <a
+            <Link
               className="rounded bg-teal-700 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-800"
-              href="#dashboard"
+              href={asRoute("/signup")}
             >
-              View MVP dashboard
-            </a>
+              Create account
+            </Link>
+            <Link
+              className="rounded border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:border-slate-400"
+              href={asRoute("/login")}
+            >
+              Log in
+            </Link>
             <Link
               className="rounded border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:border-slate-400"
               href="/admin"

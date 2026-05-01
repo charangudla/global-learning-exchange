@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "latest",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",
@@ -22,6 +23,7 @@
     "lucide-react": "latest",
     "next": "latest",
     "openai": "latest",
+    "postgres": "^3.4.9",
     "react": "latest",
     "react-dom": "latest",
     "tailwind-merge": "latest",
