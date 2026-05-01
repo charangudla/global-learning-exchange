@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import twilio from "twilio";
 import { getDb } from "@/db/client";
 import { users, verificationEvents } from "@/db/schema";
-import { env } from "@/lib/env";
+import {
+  env,
+  isDevEmailVerificationProvider,
+  isDevPhoneVerificationProvider
+} from "@/lib/env";
 import { asRoute } from "@/lib/routes";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -67,6 +71,30 @@ export async function resendEmailOtpAction(formData: FormData) {
     redirect(asRoute("/verify?error=Enter%20a%20valid%20email."));
   }
 
+  if (isDevEmailVerificationProvider()) {
+    const platformUser = await getUserByEmail(parsed.data.email);
+
+    if (platformUser) {
+      await getDb().insert(verificationEvents).values({
+        userId: platformUser.id,
+        type: "email_otp",
+        status: "sent",
+        target: parsed.data.email,
+        provider: "dev"
+      });
+    }
+
+    redirect(
+      asRoute(
+        buildVerifyPath(
+          parsed.data.email,
+          parsed.data.phoneNumber,
+          `Development email code: ${env.DEV_VERIFICATION_CODE}`
+        )
+      )
+    );
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resend({
     type: "signup",
@@ -117,6 +145,50 @@ export async function verifyEmailOtpAction(formData: FormData) {
 
   if (!parsed.success) {
     redirect(asRoute("/verify?error=Enter%20a%20valid%20email%20code."));
+  }
+
+  if (isDevEmailVerificationProvider()) {
+    if (parsed.data.token !== env.DEV_VERIFICATION_CODE) {
+      redirect(
+        asRoute(
+          buildVerifyErrorPath(
+            parsed.data.email,
+            parsed.data.phoneNumber,
+            "Development email verification code did not match."
+          )
+        )
+      );
+    }
+
+    const db = getDb();
+    const now = new Date();
+    const platformUser = await getUserByEmail(parsed.data.email);
+
+    if (platformUser) {
+      await db
+        .update(users)
+        .set({ emailVerifiedAt: now, updatedAt: now })
+        .where(eq(users.id, platformUser.id));
+
+      await db.insert(verificationEvents).values({
+        userId: platformUser.id,
+        type: "email_otp",
+        status: "verified",
+        target: parsed.data.email,
+        provider: "dev",
+        verifiedAt: now
+      });
+    }
+
+    redirect(
+      asRoute(
+        buildVerifyPath(
+          parsed.data.email,
+          parsed.data.phoneNumber,
+          "Email verified in development mode."
+        )
+      )
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -193,6 +265,26 @@ export async function sendPhoneOtpAction(formData: FormData) {
     );
   }
 
+  if (isDevPhoneVerificationProvider()) {
+    await getDb().insert(verificationEvents).values({
+      userId: platformUser.id,
+      type: "phone_otp",
+      status: "sent",
+      target: parsed.data.phoneNumber,
+      provider: "dev"
+    });
+
+    redirect(
+      asRoute(
+        buildVerifyPath(
+          parsed.data.email,
+          parsed.data.phoneNumber,
+          `Development phone code: ${env.DEV_VERIFICATION_CODE}`
+        )
+      )
+    );
+  }
+
   const { client, serviceSid } = getTwilioVerifyClient();
 
   await client.verify.v2
@@ -239,6 +331,47 @@ export async function verifyPhoneOtpAction(formData: FormData) {
         parsed.data.phoneNumber,
         "Create an account before phone verification."
       )
+      )
+    );
+  }
+
+  if (isDevPhoneVerificationProvider()) {
+    if (parsed.data.token !== env.DEV_VERIFICATION_CODE) {
+      redirect(
+        asRoute(
+          buildVerifyErrorPath(
+            parsed.data.email,
+            parsed.data.phoneNumber,
+            "Development phone verification code did not match."
+          )
+        )
+      );
+    }
+
+    const db = getDb();
+    const now = new Date();
+
+    await db
+      .update(users)
+      .set({ phoneVerifiedAt: now, updatedAt: now })
+      .where(eq(users.id, platformUser.id));
+
+    await db.insert(verificationEvents).values({
+      userId: platformUser.id,
+      type: "phone_otp",
+      status: "verified",
+      target: parsed.data.phoneNumber,
+      provider: "dev",
+      verifiedAt: now
+    });
+
+    redirect(
+      asRoute(
+        buildVerifyPath(
+          parsed.data.email,
+          parsed.data.phoneNumber,
+          "Phone verified in development mode. You can continue to your dashboard."
+        )
       )
     );
   }

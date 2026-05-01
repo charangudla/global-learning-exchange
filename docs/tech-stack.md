@@ -4,6 +4,8 @@
 
 Use a modern full-stack TypeScript application for the MVP. Keep the first version as a modular monolith, not microservices. The platform has many workflows, but the MVP needs speed, consistency, and a clear data model more than distributed infrastructure.
 
+The product should be open-source-first while staying provider-ready. That means the application code should depend on internal provider interfaces for auth, verification, AI, storage, video, and payments. During early development we can use local/open-source providers. After funding, we can swap in managed services for better reliability, scaling, compliance, and operational support.
+
 The stack should support:
 
 - Global students and speakers.
@@ -44,31 +46,35 @@ The MVP does not need a separate backend service on day one. We can keep busines
 
 ### Database
 
-- Supabase Postgres
+- PostgreSQL
 - Drizzle ORM
-- Row Level Security policies for sensitive user/session data
 - SQL migrations committed to the repo
 
 Reason:
 
-Postgres is the right fit for users, sessions, bookings, ratings, reviews, moderation logs, and content. Supabase gives us managed Postgres plus useful adjacent services. Drizzle gives us typed schema and queries without heavy abstraction.
+Postgres is the right fit for users, sessions, bookings, ratings, reviews, moderation logs, and content. Drizzle gives us typed schema and queries without heavy abstraction. Postgres can run locally, on a VPS, through self-hosted Supabase, or through a managed provider later.
 
 ### Authentication And Verification
 
-- Supabase Auth for email/password accounts and email verification
-- Twilio Verify for phone OTP verification
+- Local/custom auth provider for development and MVP workflow testing
+- Email verification provider interface
+- Phone verification provider interface
+- Development verification mode for local testing
+- Optional future providers: self-hosted Supabase Auth, managed Supabase Auth, Auth.js, Keycloak, Twilio Verify, other SMS vendors
 - Verification status stored in user profile tables
 - Speaker-specific verification layer for LinkedIn, Google Scholar, ORCID, university profile, company profile, portfolio, or certification links
 
 Reason:
 
-Every user needs email and phone verification. Speakers need additional credibility checks before they can offer sessions. AI can summarize profile credibility, but automated rules and admin exception review should control the final verification state.
+Every user needs email and phone verification. Speakers need additional credibility checks before they can offer sessions. In local development we can simulate verification to avoid paid services. For production, phone verification still needs a telecom/SMS provider or equivalent identity provider, but the platform should not be hardcoded to one vendor.
 
 ### Realtime Chat
 
-- Supabase Realtime for MVP chat updates
+- Postgres-backed chat for MVP
+- Polling or simple realtime transport first
+- Later: Socket.IO, LiveKit data channels, Supabase Realtime, or another realtime provider
 - Postgres tables for durable chat history
-- Supabase Storage for attachments
+- Local file storage first, object storage later
 
 Reason:
 
@@ -113,11 +119,12 @@ Later:
 
 - Whisper or faster-whisper for speech-to-text.
 - LiveKit Agents for realtime AI note-taking inside native rooms.
-- Optional self-hosted models through Ollama or vLLM for cost control.
+- Self-hosted models through Ollama or vLLM for cost control.
+- Managed providers such as OpenAI can be added after funding when quality, latency, and reliability matter more.
 
 Reason:
 
-AI is a core product feature, so the MVP should use a high-quality managed model first. The implementation should stay provider-flexible to support open-source models later.
+AI is a core product feature, so the implementation must stay provider-flexible. Local Ollama support is useful for development and cost control; managed models can be added later when the product needs stronger quality, speed, and availability.
 
 ### Search And Recommendations
 
@@ -182,15 +189,15 @@ Moderation is not optional for this platform. Admin actions should preserve hist
 
 Recommended MVP hosting:
 
-- Vercel for Next.js
-- Supabase hosted project for Postgres, Auth, Storage, and Realtime
-- Twilio for phone verification
-- OpenAI for AI
+- Local development first
+- Docker/VPS deployment path
+- Managed hosting later when funding allows
+- Optional future providers: Vercel, Supabase, Twilio, OpenAI, Stripe
 - Stripe later for donations/payments
 
 Reason:
 
-This keeps operational work low while the product is being validated.
+Local/open-source development keeps early cost low. Managed services can reduce operational work later, especially for auth, SMS, AI, payments, uptime, backups, and observability.
 
 ### Testing And Quality
 
@@ -213,16 +220,30 @@ Critical end-to-end test flows:
 - Both users review each other.
 - Admin blocks/unblocks a user or session.
 
-## Future Self-Hosted / Open-Source Path
+## Open-Source-First Path
 
-If the platform later needs a more open-source or self-hosted stack:
+Default early path:
 
 - Keep Next.js frontend.
-- Move Postgres to a managed or self-hosted Postgres provider.
+- Use local or self-hosted Postgres.
+- Use custom/auth-provider abstraction for auth.
+- Use dev verification locally.
 - Use LiveKit or Jitsi for native video.
-- Use MinIO or Cloudflare R2-compatible storage for media.
+- Use local disk first and object storage later.
 - Use Ollama, vLLM, or another self-hosted model server for some AI tasks.
 - Add a separate worker service for transcription, recording, notifications, and AI note generation.
+
+## Future Managed Services Path
+
+After funding, consider:
+
+- Managed Postgres or Supabase for database operations and backups.
+- Twilio, MessageBird, Vonage, or another provider for reliable phone OTP.
+- Managed email provider for deliverability.
+- OpenAI or another managed AI provider for better tutoring quality.
+- Stripe for donations, platform payments, and speaker payouts.
+- Vercel or managed container hosting for deployment.
+- Cloudflare R2, S3, Backblaze B2, or Wasabi for media storage.
 
 ## Technology Decisions To Avoid For MVP
 
@@ -232,4 +253,3 @@ If the platform later needs a more open-source or self-hosted stack:
 - Do not build payment processing before trust and booking workflows work.
 - Do not store large video files in the main database.
 - Do not let AI make irreversible moderation or verification decisions without auditability.
-

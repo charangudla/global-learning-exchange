@@ -26,6 +26,18 @@ http://localhost:3000
 
 Copy `.env.example` to `.env.local` and fill in the values when Supabase, Twilio, and OpenAI are configured.
 
+For open-source-first local development, start with:
+
+```env
+APP_MODE=local
+AUTH_PROVIDER=local
+EMAIL_VERIFICATION_PROVIDER=dev
+PHONE_VERIFICATION_PROVIDER=dev
+DEV_VERIFICATION_CODE=000000
+```
+
+Managed providers can be added later without changing the product workflows.
+
 ## Database
 
 The Drizzle schema lives in:
