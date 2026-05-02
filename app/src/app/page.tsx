@@ -5,7 +5,7 @@ import {
   CalendarClock,
   MessageSquareText,
   ShieldCheck,
-  Star
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { asRoute } from "@/lib/routes";
@@ -14,38 +14,38 @@ const marketplaceStats = [
   { label: "AI tutor", value: "Immediate" },
   { label: "Speaker flow", value: "Verified" },
   { label: "Session type", value: "1:1 MVP" },
-  { label: "Access", value: "Global" }
+  { label: "Access", value: "Global" },
 ];
 
 const workflow = [
   {
     icon: Bot,
     title: "Ask AI first",
-    text: "Students can get immediate help and turn a question into a session request."
+    text: "Students can get immediate help and turn a question into a session request.",
   },
   {
     icon: BadgeCheck,
     title: "Find verified speakers",
-    text: "Email, phone, and profile signals support automated speaker verification."
+    text: "Email, phone, and profile signals support automated speaker verification.",
   },
   {
     icon: CalendarClock,
     title: "Book a session",
-    text: "Calendar holds, clear status, and meeting links keep the session path visible."
+    text: "Calendar holds, clear status, and meeting links keep the session path visible.",
   },
   {
     icon: Star,
     title: "Review and learn",
-    text: "Ratings, notes, and history help the platform reward reliable participation."
-  }
+    text: "Ratings, notes, and history help the platform reward reliable participation.",
+  },
 ];
 
 const dashboardItems = [
-  "Post a learning request",
-  "Browse verified speakers",
-  "Continue AI tutoring",
-  "Review upcoming bookings",
-  "Open admin moderation"
+  { label: "Post a learning request", status: "Ready" },
+  { label: "Browse verified speakers", status: "Planned" },
+  { label: "Continue AI tutoring", status: "Planned" },
+  { label: "Review upcoming bookings", status: "Planned" },
+  { label: "Open admin moderation", status: "Preview" },
 ];
 
 export default function Home() {
@@ -81,9 +81,9 @@ export default function Home() {
             A testable MVP for global one-on-one learning support.
           </h2>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-            Students get immediate AI help, request human tutoring, book verified
-            speakers, chat before sessions, complete talks, and build history
-            through reviews, notes, and moderation-ready records.
+            Students get immediate AI help, request human tutoring, book
+            verified speakers, chat before sessions, complete talks, and build
+            history through reviews, notes, and moderation-ready records.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
@@ -152,7 +152,11 @@ export default function Home() {
                   className="rounded border border-slate-200 bg-white p-5"
                   key={item.title}
                 >
-                  <Icon className="text-blue-700" size={24} aria-hidden="true" />
+                  <Icon
+                    className="text-blue-700"
+                    size={24}
+                    aria-hidden="true"
+                  />
                   <h3 className="mt-4 font-semibold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {item.text}
@@ -173,16 +177,19 @@ export default function Home() {
             {dashboardItems.map((item) => (
               <div
                 className="flex items-center justify-between border-b border-slate-100 px-5 py-4 last:border-b-0"
-                key={item}
+                key={item.label}
               >
-                <span className="font-medium text-slate-800">{item}</span>
-                <span className="text-sm text-slate-500">Planned</span>
+                <span className="font-medium text-slate-800">{item.label}</span>
+                <span className="text-sm text-slate-500">{item.status}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded border border-slate-200 bg-white p-5" id="trust">
+        <div
+          className="rounded border border-slate-200 bg-white p-5"
+          id="trust"
+        >
           <MessageSquareText className="text-teal-700" size={25} />
           <h2 className="mt-4 text-xl font-bold text-slate-950">
             Moderation-ready by design

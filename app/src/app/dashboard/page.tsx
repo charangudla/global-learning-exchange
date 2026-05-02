@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bot, CalendarClock, CheckCircle2, ShieldCheck } from "lucide-react";
+import {
+  Bot,
+  CalendarClock,
+  CheckCircle2,
+  FileText,
+  ShieldCheck,
+} from "lucide-react";
 import { logoutAction } from "@/domains/auth/actions";
 import { getCurrentUserContext } from "@/domains/auth/context";
 import { asRoute } from "@/lib/routes";
@@ -11,18 +17,20 @@ const nextActions = [
   {
     title: "Ask AI tutor",
     text: "Immediate AI help will live here first.",
-    icon: Bot
+    icon: Bot,
   },
   {
     title: "Post a request",
     text: "Students will describe topic, language, urgency, and time windows.",
-    icon: CalendarClock
+    icon: CalendarClock,
+    href: "/requests/new",
+    cta: "Create request",
   },
   {
     title: "Find verified speakers",
     text: "Marketplace filters will use subject, language, availability, and trust.",
-    icon: ShieldCheck
-  }
+    icon: ShieldCheck,
+  },
 ];
 
 export default async function DashboardPage() {
@@ -102,8 +110,8 @@ export default async function DashboardPage() {
                 className="rounded bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
                 href={asRoute(
                   `/verify?email=${encodeURIComponent(
-                    platformUser?.email ?? context.authUser.email ?? ""
-                  )}&phone=${encodeURIComponent(platformUser?.phoneNumber ?? "")}`
+                    platformUser?.email ?? context.authUser.email ?? "",
+                  )}&phone=${encodeURIComponent(platformUser?.phoneNumber ?? "")}`,
                 )}
               >
                 Finish verification
@@ -125,6 +133,25 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
+
+          {fullyVerified ? (
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                className="inline-flex items-center gap-2 rounded bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+                href={asRoute("/requests/new")}
+              >
+                <CalendarClock size={17} aria-hidden="true" />
+                Post a request
+              </Link>
+              <Link
+                className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:border-slate-400"
+                href={asRoute("/requests")}
+              >
+                <FileText size={17} aria-hidden="true" />
+                My requests
+              </Link>
+            </div>
+          ) : null}
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">
@@ -141,9 +168,18 @@ export default async function DashboardPage() {
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {item.text}
                 </p>
-                <p className="mt-4 text-sm font-semibold text-slate-500">
-                  {fullyVerified ? "Ready for next build step" : "Locked"}
-                </p>
+                {fullyVerified && item.href ? (
+                  <Link
+                    className="mt-4 inline-flex rounded bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                    href={asRoute(item.href)}
+                  >
+                    {item.cta}
+                  </Link>
+                ) : (
+                  <p className="mt-4 text-sm font-semibold text-slate-500">
+                    {fullyVerified ? "Ready for next build step" : "Locked"}
+                  </p>
+                )}
               </article>
             );
           })}
